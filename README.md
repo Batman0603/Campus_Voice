@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CampusVoice
+
+**Pedagogy and Performance Feedback System**
+
+CampusVoice is a centralized school feedback and academic performance analytics platform developed for The Nest School, Academic Year 2026–27.
+
+## Overview
+
+CampusVoice provides a unified platform for collecting, managing and analyzing feedback from students, teachers, SEN mentors, Heads of Department and school leadership.
+
+The platform combines configurable questionnaires, conditional branching, feedback reporting and academic performance analytics.
+
+## Technology Stack
+
+- Next.js – Full-stack React framework
+- React – User interface
+- TypeScript – Application language
+- Tailwind CSS – Styling
+- shadcn/ui – UI components
+- PostgreSQL – Relational database
+- Prisma ORM – Database access and migrations
+- Zod – Validation
+- Auth.js – Authentication
+- Vitest – Unit and integration testing
+- Playwright – End-to-end testing
+
+## Application Modules
+
+1. Student Voice
+2. Teacher Reflection
+3. SEN
+4. HoD Checks
+5. Leadership Report
+6. Feedback Reports
+7. Academic Performance Analytics
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 22.20.0
+- npm
+- PostgreSQL
+- Git
+
+### Installation
+
+```bash
+git clone <repository-url>
+cd campusvoice
+npm install
+```
+
+Create a local `.env` file using `.env.example` and configure the PostgreSQL connection strings.
+
+### Database Setup
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Development Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command                     | Purpose                          |
+| --------------------------- | -------------------------------- |
+| `npm run dev`               | Start development server         |
+| `npm run build`             | Generate Prisma Client and build |
+| `npm run start`             | Start production server          |
+| `npm run lint`              | Run ESLint                       |
+| `npm run typecheck`         | Check TypeScript                 |
+| `npm run format`            | Format source files              |
+| `npm run db:generate`       | Generate Prisma Client           |
+| `npm run db:migrate`        | Run development migration        |
+| `npm run db:migrate:deploy` | Apply production migrations      |
+| `npm run db:studio`         | Open Prisma Studio               |
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+CampusVoice follows a modular monolith architecture with feature-oriented application modules and centralized server-side services.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See `docs/architecture.md` for details.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Development
 
-## Deploy on Vercel
+See `CONTRIBUTING.md` for branching conventions, coding standards and contribution guidelines.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Initial foundation and infrastructure setup.
