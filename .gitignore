@@ -37,3 +37,10 @@ next-env.d.ts
 # Miscellaneous
 .DS_Store
 *.pem
+
+# Local agent configuration
+/.agents/
+/.claude/
+/.windsurf/
+/instruction-set.md
+/skills-lock.json
