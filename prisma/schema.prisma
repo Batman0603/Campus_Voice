@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -8,10 +7,46 @@ datasource db {
   provider = "postgresql"
 }
 
-// Initial system configuration model.
-// Application-specific models will be introduced
-// in the subsequent development phases.
+enum Role {
+  STUDENT
+  TEACHER
+  SEN
+  HOD
+  COORDINATOR
+  PRINCIPAL
+  ADMIN
+}
 
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("departments")
+}
+
+model User {
+  id             String      @id @default(cuid())
+  name           String
+  email          String      @unique
+  passwordHash   String
+  role           Role        @default(STUDENT)
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  isActive       Boolean     @default(true)
+  sessionVersion Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([role])
+  @@index([departmentId])
+  @@map("users")
+}
+
+// Preserve the existing foundation model.
 model SystemSetting {
   id        String   @id @default(cuid())
   key       String   @unique
