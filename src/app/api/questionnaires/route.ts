@@ -1,4 +1,3 @@
-
 import { connection, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/auth/currentUser';
@@ -23,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json(
       { success: true, data },
-      { headers: { 'Cache-Control': 'no-store' } }
+      { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
     return respondError(error);
@@ -43,10 +42,7 @@ export async function POST(request: Request) {
 
     const data = await createQuestionnaire(user, input);
 
-    return NextResponse.json(
-      { success: true, data },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data }, { status: 201 });
   } catch (error) {
     return respondError(error);
   }

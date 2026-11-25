@@ -1,4 +1,3 @@
-
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -25,19 +24,16 @@ const questionnaire = {
 };
 
 test('teacher can create Student Voice', () => {
-  assert.equal(
-    canCreate(teacher, QuestionnairePurpose.STUDENT_VOICE),
-    true
-  );
+  assert.equal(canCreate(teacher, QuestionnairePurpose.STUDENT_VOICE), true);
 });
 
 test('student cannot create questionnaires', () => {
   assert.equal(
     canCreate(
       { ...teacher, role: Role.STUDENT },
-      QuestionnairePurpose.STUDENT_VOICE
+      QuestionnairePurpose.STUDENT_VOICE,
     ),
-    false
+    false,
   );
 });
 
@@ -51,35 +47,33 @@ test('teacher cannot edit published form', () => {
       ...questionnaire,
       status: QuestionnaireStatus.PUBLISHED,
     }),
-    false
+    false,
   );
 });
 
 test('unrelated teacher cannot read private draft', () => {
-  assert.equal(
-    canRead(
-      { ...teacher, id: 'teacher-2' },
-      questionnaire
-    ),
-    false
-  );
+  assert.equal(canRead({ ...teacher, id: 'teacher-2' }, questionnaire), false);
 });
 
 test('valid questionnaire passes', () => {
   const result = questionnaireInputSchema.safeParse({
     title: 'Student Learning Experience',
     purpose: QuestionnairePurpose.STUDENT_VOICE,
-    sections: [{
-      title: 'Experience',
-      questions: [{
-        title: 'How was your experience?',
-        type: QuestionType.SINGLE_CHOICE,
-        options: [
-          { label: 'Good', value: 'good' },
-          { label: 'Poor', value: 'poor' },
+    sections: [
+      {
+        title: 'Experience',
+        questions: [
+          {
+            title: 'How was your experience?',
+            type: QuestionType.SINGLE_CHOICE,
+            options: [
+              { label: 'Good', value: 'good' },
+              { label: 'Poor', value: 'poor' },
+            ],
+          },
         ],
-      }],
-    }],
+      },
+    ],
   });
 
   assert.equal(result.success, true);
@@ -93,18 +87,20 @@ test('invalid backward branch is rejected', () => {
       { title: 'First', questions: [] },
       {
         title: 'Second',
-        questions: [{
-          title: 'Go back?',
-          type: QuestionType.YES_NO,
-          options: [
-            {
-              label: 'Yes',
-              value: 'yes',
-              nextSectionPosition: 0,
-            },
-            { label: 'No', value: 'no' },
-          ],
-        }],
+        questions: [
+          {
+            title: 'Go back?',
+            type: QuestionType.YES_NO,
+            options: [
+              {
+                label: 'Yes',
+                value: 'yes',
+                nextSectionPosition: 0,
+              },
+              { label: 'No', value: 'no' },
+            ],
+          },
+        ],
       },
     ],
   });

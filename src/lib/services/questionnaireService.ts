@@ -1,4 +1,3 @@
-
 import 'server-only';
 
 import { Prisma } from '@/generated/prisma/client';
@@ -13,9 +12,7 @@ import {
   type Actor,
 } from '@/lib/questionnaire/permissions';
 
-import {
-  type QuestionnaireInput,
-} from '@/lib/questionnaire/validationSchemas';
+import { type QuestionnaireInput } from '@/lib/questionnaire/validationSchemas';
 
 import { ApiError } from '@/lib/questionnaire/api';
 
@@ -77,12 +74,14 @@ export async function listQuestionnaires(actor: Actor) {
     where: {
       OR: [
         { createdById: actor.id },
-        ...(actor.departmentId && (
-          actor.role === 'HOD' ||
-          actor.role === 'COORDINATOR'
-        ) ? [{
-          departmentId: actor.departmentId,
-        }] : []),
+        ...(actor.departmentId &&
+        (actor.role === 'HOD' || actor.role === 'COORDINATOR')
+          ? [
+              {
+                departmentId: actor.departmentId,
+              },
+            ]
+          : []),
         ...(actor.role === 'PRINCIPAL'
           ? [{ status: QuestionnaireStatus.PUBLISHED }]
           : []),
@@ -92,19 +91,16 @@ export async function listQuestionnaires(actor: Actor) {
     take: 100,
   });
 
-  return all.filter(q => canRead(actor, q));
+  return all.filter((q) => canRead(actor, q));
 }
 
-export async function getQuestionnaire(
-  id: string,
-  actor: Actor
-) {
+export async function getQuestionnaire(id: string, actor: Actor) {
   return findAccessible(id, actor);
 }
 
 export async function createQuestionnaire(
   actor: Actor,
-  input: QuestionnaireInput
+  input: QuestionnaireInput,
 ) {
   if (!canCreate(actor, input.purpose)) {
     throw new ApiError(403, 'FORBIDDEN', 'Creation not permitted');
@@ -139,7 +135,7 @@ export async function createQuestionnaire(
 export async function updateQuestionnaire(
   id: string,
   actor: Actor,
-  input: QuestionnaireInput
+  input: QuestionnaireInput,
 ) {
   const current = await findAccessible(id, actor);
 
@@ -149,12 +145,13 @@ export async function updateQuestionnaire(
 
   if (current.purpose !== input.purpose) {
     throw new ApiError(
-      400, 'PURPOSE_IMMUTABLE',
-      'Questionnaire purpose cannot be changed'
+      400,
+      'PURPOSE_IMMUTABLE',
+      'Questionnaire purpose cannot be changed',
     );
   }
 
-  return prisma.$transaction(async tx => {
+  return prisma.$transaction(async (tx) => {
     const lock = await tx.questionnaire.updateMany({
       where: { id, status: QuestionnaireStatus.DRAFT },
       data: { updatedAt: new Date() },
@@ -183,10 +180,7 @@ export async function updateQuestionnaire(
   });
 }
 
-export async function publishQuestionnaire(
-  id: string,
-  actor: Actor
-) {
+export async function publishQuestionnaire(id: string, actor: Actor) {
   const current = await findAccessible(id, actor);
 
   if (!canPublish(actor, current)) {
@@ -195,12 +189,12 @@ export async function publishQuestionnaire(
 
   if (
     current.sections.length === 0 ||
-    current.sections.some(s => s.questions.length === 0)
+    current.sections.some((s) => s.questions.length === 0)
   ) {
     throw new ApiError(
       400,
       'INCOMPLETE_QUESTIONNAIRE',
-      'Every published section must contain questions'
+      'Every published section must contain questions',
     );
   }
 
@@ -222,10 +216,7 @@ export async function publishQuestionnaire(
   });
 }
 
-export async function archiveQuestionnaire(
-  id: string,
-  actor: Actor
-) {
+export async function archiveQuestionnaire(id: string, actor: Actor) {
   const current = await findAccessible(id, actor);
 
   // Archiving a published form requires the same ownership
@@ -249,8 +240,9 @@ export async function archiveQuestionnaire(
 
   if (updated.count !== 1) {
     throw new ApiError(
-      409, 'CONFLICT',
-      'Only published questionnaires can be archived'
+      409,
+      'CONFLICT',
+      'Only published questionnaires can be archived',
     );
   }
 
@@ -259,10 +251,7 @@ export async function archiveQuestionnaire(
   });
 }
 
-export async function deleteDraft(
-  id: string,
-  actor: Actor
-) {
+export async function deleteDraft(id: string, actor: Actor) {
   const current = await findAccessible(id, actor);
 
   if (!canEdit(actor, current)) {

@@ -1,4 +1,3 @@
-
 import { connection, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/auth/currentUser';
@@ -14,10 +13,7 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-export async function GET(
-  _request: Request,
-  context: RouteContext
-) {
+export async function GET(_request: Request, context: RouteContext) {
   await connection();
 
   try {
@@ -32,17 +28,14 @@ export async function GET(
 
     return NextResponse.json(
       { success: true, data },
-      { headers: { 'Cache-Control': 'no-store' } }
+      { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
     return respondError(error);
   }
 }
 
-export async function PATCH(
-  request: Request,
-  context: RouteContext
-) {
+export async function PATCH(request: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
 
@@ -62,10 +55,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  context: RouteContext
-) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
 

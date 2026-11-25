@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/lib/auth/currentUser';
@@ -9,10 +8,7 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-export async function POST(
-  _request: Request,
-  context: RouteContext
-) {
+export async function POST(_request: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
 

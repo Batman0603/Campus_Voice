@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
@@ -6,7 +5,7 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     public code: string,
-    message: string
+    message: string,
   ) {
     super(message);
   }
@@ -22,7 +21,7 @@ export function respondError(error: unknown) {
           message: error.message,
         },
       },
-      { status: error.status }
+      { status: error.status },
     );
   }
 
@@ -33,13 +32,13 @@ export function respondError(error: unknown) {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid questionnaire data',
-          details: error.issues.map(issue => ({
+          details: error.issues.map((issue) => ({
             path: issue.path.join('.'),
             message: issue.message,
           })),
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -52,7 +51,7 @@ export function respondError(error: unknown) {
           message: 'Invalid JSON request body',
         },
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -66,6 +65,6 @@ export function respondError(error: unknown) {
         message: 'Unable to process request',
       },
     },
-    { status: 500 }
+    { status: 500 },
   );
 }

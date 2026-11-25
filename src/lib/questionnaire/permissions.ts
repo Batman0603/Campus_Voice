@@ -1,4 +1,3 @@
-
 import {
   Role,
   QuestionnairePurpose,
@@ -17,33 +16,29 @@ export type QuestionnaireAccess = {
   status: QuestionnaireStatus;
 };
 
-const CREATE_PURPOSES: Partial<
-  Record<Role, readonly QuestionnairePurpose[]>
-> = {
-  TEACHER: [
-    QuestionnairePurpose.STUDENT_VOICE,
-    QuestionnairePurpose.TEACHER_REFLECTION,
-  ],
-  SEN: [QuestionnairePurpose.SEN],
-  HOD: [
-    QuestionnairePurpose.STUDENT_VOICE,
-    QuestionnairePurpose.HOD_CHECK,
-    QuestionnairePurpose.LEADERSHIP_REPORT,
-  ],
-  COORDINATOR: [QuestionnairePurpose.HOD_CHECK],
-};
+const CREATE_PURPOSES: Partial<Record<Role, readonly QuestionnairePurpose[]>> =
+  {
+    TEACHER: [
+      QuestionnairePurpose.STUDENT_VOICE,
+      QuestionnairePurpose.TEACHER_REFLECTION,
+    ],
+    SEN: [QuestionnairePurpose.SEN],
+    HOD: [
+      QuestionnairePurpose.STUDENT_VOICE,
+      QuestionnairePurpose.HOD_CHECK,
+      QuestionnairePurpose.LEADERSHIP_REPORT,
+    ],
+    COORDINATOR: [QuestionnairePurpose.HOD_CHECK],
+  };
 
 export function canCreate(
   actor: Actor,
-  purpose: QuestionnairePurpose
+  purpose: QuestionnairePurpose,
 ): boolean {
   return (CREATE_PURPOSES[actor.role] ?? []).includes(purpose);
 }
 
-export function canEdit(
-  actor: Actor,
-  resource: QuestionnaireAccess
-): boolean {
+export function canEdit(actor: Actor, resource: QuestionnaireAccess): boolean {
   if (resource.status !== QuestionnaireStatus.DRAFT) {
     return false;
   }
@@ -52,21 +47,17 @@ export function canEdit(
     return resource.createdById === actor.id;
   }
 
-  if (
-    actor.role === Role.HOD ||
-    actor.role === Role.COORDINATOR
-  ) {
-    return actor.departmentId !== null &&
-      resource.departmentId === actor.departmentId;
+  if (actor.role === Role.HOD || actor.role === Role.COORDINATOR) {
+    return (
+      actor.departmentId !== null &&
+      resource.departmentId === actor.departmentId
+    );
   }
 
   return false;
 }
 
-export function canRead(
-  actor: Actor,
-  resource: QuestionnaireAccess
-): boolean {
+export function canRead(actor: Actor, resource: QuestionnaireAccess): boolean {
   if (resource.createdById === actor.id) return true;
   if (canEdit(actor, resource)) return true;
 
@@ -79,13 +70,12 @@ export function canRead(
 
   if (
     resource.status === QuestionnaireStatus.PUBLISHED &&
-    (
-      actor.role === Role.HOD ||
-      actor.role === Role.COORDINATOR
-    )
+    (actor.role === Role.HOD || actor.role === Role.COORDINATOR)
   ) {
-    return actor.departmentId !== null &&
-      actor.departmentId === resource.departmentId;
+    return (
+      actor.departmentId !== null &&
+      actor.departmentId === resource.departmentId
+    );
   }
 
   return false;
