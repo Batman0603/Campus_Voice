@@ -1,13 +1,6 @@
+import { QuestionnairePurpose, Role } from '@/generated/prisma/enums';
 
-import {
-  QuestionnairePurpose,
-  Role,
-} from '@/generated/prisma/enums';
-
-const RESPONDENT_ROLES: Record<
-  QuestionnairePurpose,
-  readonly Role[]
-> = {
+const RESPONDENT_ROLES: Record<QuestionnairePurpose, readonly Role[]> = {
   STUDENT_VOICE: [Role.STUDENT],
   TEACHER_REFLECTION: [Role.TEACHER],
   SEN: [Role.SEN],
@@ -17,14 +10,14 @@ const RESPONDENT_ROLES: Record<
 
 export function isEligibleRespondent(
   purpose: QuestionnairePurpose,
-  role: Role
+  role: Role,
 ): boolean {
   return RESPONDENT_ROLES[purpose].includes(role);
 }
 
 export function canAssignRespondent(
   actorId: string,
-  questionnaireCreatorId: string
+  questionnaireCreatorId: string,
 ): boolean {
   return actorId === questionnaireCreatorId;
 }

@@ -1,4 +1,3 @@
-
 import 'server-only';
 
 import { Prisma } from '@/generated/prisma/client';
@@ -11,9 +10,7 @@ import {
   isEligibleRespondent,
 } from '@/lib/submission/eligibility';
 
-import {
-  type SubmissionInput,
-} from '@/lib/submission/validationSchemas';
+import { type SubmissionInput } from '@/lib/submission/validationSchemas';
 
 import {
   SubmissionValidationError,
@@ -45,7 +42,7 @@ const questionnaireGraph = {
 export async function assignRespondent(
   questionnaireId: string,
   actor: CurrentUser,
-  targetUserId: string
+  targetUserId: string,
 ) {
   const questionnaire = await prisma.questionnaire.findUnique({
     where: { id: questionnaireId },
@@ -89,8 +86,9 @@ export async function assignRespondent(
     questionnaire.departmentId !== target.departmentId
   ) {
     throw new ApiError(
-      403, 'DEPARTMENT_MISMATCH',
-      'User is outside the questionnaire department'
+      403,
+      'DEPARTMENT_MISMATCH',
+      'User is outside the questionnaire department',
     );
   }
 
@@ -113,8 +111,9 @@ export async function assignRespondent(
       error.code === 'P2002'
     ) {
       throw new ApiError(
-        409, 'ALREADY_ASSIGNED',
-        'This user is already assigned'
+        409,
+        'ALREADY_ASSIGNED',
+        'This user is already assigned',
       );
     }
 
@@ -122,10 +121,7 @@ export async function assignRespondent(
   }
 }
 
-async function getAssignment(
-  questionnaireId: string,
-  userId: string
-) {
+async function getAssignment(questionnaireId: string, userId: string) {
   const assignment = await prisma.questionnaireAssignment.findUnique({
     where: {
       questionnaireId_userId: {
@@ -143,8 +139,9 @@ async function getAssignment(
 
   if (!assignment) {
     throw new ApiError(
-      404, 'ASSIGNMENT_NOT_FOUND',
-      'No questionnaire assignment found'
+      404,
+      'ASSIGNMENT_NOT_FOUND',
+      'No questionnaire assignment found',
     );
   }
 
@@ -153,7 +150,7 @@ async function getAssignment(
 
 export async function getAssignedQuestionnaire(
   questionnaireId: string,
-  user: CurrentUser
+  user: CurrentUser,
 ) {
   const assignment = await getAssignment(questionnaireId, user.id);
 
@@ -187,14 +184,15 @@ export async function getAssignedQuestionnaire(
 export async function submitFeedback(
   questionnaireId: string,
   user: CurrentUser,
-  input: SubmissionInput
+  input: SubmissionInput,
 ) {
   const assignment = await getAssignment(questionnaireId, user.id);
 
   if (assignment.submission) {
     throw new ApiError(
-      409, 'ALREADY_SUBMITTED',
-      'Feedback has already been submitted'
+      409,
+      'ALREADY_SUBMITTED',
+      'Feedback has already been submitted',
     );
   }
 
@@ -218,15 +216,10 @@ export async function submitFeedback(
   let validAnswers: SubmissionInput['answers'];
 
   try {
-    validAnswers = validateSubmissionAnswers(
-      questionnaire.sections,
-      input
-    );
+    validAnswers = validateSubmissionAnswers(questionnaire.sections, input);
   } catch (error) {
     if (error instanceof SubmissionValidationError) {
-      throw new ApiError(
-        422, 'INVALID_ANSWERS', error.message
-      );
+      throw new ApiError(422, 'INVALID_ANSWERS', error.message);
     }
 
     throw error;
@@ -237,7 +230,7 @@ export async function submitFeedback(
       data: {
         assignmentId: assignment.id,
         answers: {
-          create: validAnswers.map(answer => ({
+          create: validAnswers.map((answer) => ({
             questionId: answer.questionId,
             value: answer.value,
           })),
@@ -254,8 +247,9 @@ export async function submitFeedback(
       error.code === 'P2002'
     ) {
       throw new ApiError(
-        409, 'ALREADY_SUBMITTED',
-        'Feedback has already been submitted'
+        409,
+        'ALREADY_SUBMITTED',
+        'Feedback has already been submitted',
       );
     }
 
@@ -263,10 +257,7 @@ export async function submitFeedback(
   }
 }
 
-export async function getMySubmission(
-  questionnaireId: string,
-  userId: string
-) {
+export async function getMySubmission(questionnaireId: string, userId: string) {
   const assignment = await prisma.questionnaireAssignment.findUnique({
     where: {
       questionnaireId_userId: {
@@ -291,9 +282,7 @@ export async function getMySubmission(
   });
 
   if (!assignment?.submission) {
-    throw new ApiError(
-      404, 'NOT_FOUND', 'Submission not found'
-    );
+    throw new ApiError(404, 'NOT_FOUND', 'Submission not found');
   }
 
   return assignment.submission;

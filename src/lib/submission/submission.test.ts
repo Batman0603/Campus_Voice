@@ -1,4 +1,3 @@
-
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -61,21 +60,15 @@ const sections = [
 
 test('Student can answer Student Voice', () => {
   assert.equal(
-    isEligibleRespondent(
-      QuestionnairePurpose.STUDENT_VOICE,
-      Role.STUDENT
-    ),
-    true
+    isEligibleRespondent(QuestionnairePurpose.STUDENT_VOICE, Role.STUDENT),
+    true,
   );
 });
 
 test('Teacher cannot answer Student Voice', () => {
   assert.equal(
-    isEligibleRespondent(
-      QuestionnairePurpose.STUDENT_VOICE,
-      Role.TEACHER
-    ),
-    false
+    isEligibleRespondent(QuestionnairePurpose.STUDENT_VOICE, Role.TEACHER),
+    false,
   );
 });
 

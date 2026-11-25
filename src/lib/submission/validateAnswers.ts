@@ -1,4 +1,3 @@
-
 import { QuestionType } from '@/generated/prisma/enums';
 import type { SubmissionInput } from './validationSchemas';
 
@@ -32,18 +31,13 @@ function reject(message: string): never {
   throw new SubmissionValidationError(message);
 }
 
-function validateValue(
-  question: QuestionDefinition,
-  value: AnswerValue
-): void {
-  const options = question.options.map(option => option.value);
+function validateValue(question: QuestionDefinition, value: AnswerValue): void {
+  const options = question.options.map((option) => option.value);
 
   switch (question.type) {
     case QuestionType.SHORT_TEXT:
     case QuestionType.LONG_TEXT: {
-      const limit = question.type === QuestionType.SHORT_TEXT
-        ? 500
-        : 10000;
+      const limit = question.type === QuestionType.SHORT_TEXT ? 500 : 10000;
 
       if (
         typeof value !== 'string' ||
@@ -57,10 +51,7 @@ function validateValue(
 
     case QuestionType.SINGLE_CHOICE:
     case QuestionType.YES_NO:
-      if (
-        typeof value !== 'string' ||
-        !options.includes(value)
-      ) {
+      if (typeof value !== 'string' || !options.includes(value)) {
         reject('Invalid selected option');
       }
       return;
@@ -68,7 +59,7 @@ function validateValue(
     case QuestionType.MULTIPLE_CHOICE:
       if (
         !Array.isArray(value) ||
-        value.some(item => !options.includes(item)) ||
+        value.some((item) => !options.includes(item)) ||
         new Set(value).size !== value.length ||
         (question.required && value.length === 0)
       ) {
@@ -94,7 +85,7 @@ function validateValue(
 
 export function validateSubmissionAnswers(
   sections: SectionDefinition[],
-  input: SubmissionInput
+  input: SubmissionInput,
 ) {
   const answers = new Map<string, AnswerValue>();
 
@@ -106,9 +97,7 @@ export function validateSubmissionAnswers(
     answers.set(answer.questionId, answer.value);
   }
 
-  const orderedSections = [...sections].sort(
-    (a, b) => a.position - b.position
-  );
+  const orderedSections = [...sections].sort((a, b) => a.position - b.position);
 
   const visitedQuestions = new Set<string>();
 
@@ -117,10 +106,8 @@ export function validateSubmissionAnswers(
   while (sectionIndex < orderedSections.length) {
     const section = orderedSections[sectionIndex];
 
-    const branchQuestions = section.questions.filter(
-      question => question.options.some(
-        option => option.nextSectionPosition !== null
-      )
+    const branchQuestions = section.questions.filter((question) =>
+      question.options.some((option) => option.nextSectionPosition !== null),
     );
 
     if (branchQuestions.length > 1) {
@@ -151,14 +138,14 @@ export function validateSubmissionAnswers(
 
       if (typeof value === 'string') {
         const selectedOption = branchQuestion.options.find(
-          option => option.value === value
+          (option) => option.value === value,
         );
 
         const target = selectedOption?.nextSectionPosition;
 
         if (target != null) {
           const targetIndex = orderedSections.findIndex(
-            candidate => candidate.position === target
+            (candidate) => candidate.position === target,
           );
 
           if (targetIndex <= sectionIndex) {
