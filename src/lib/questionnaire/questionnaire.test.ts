@@ -107,3 +107,36 @@ test('invalid backward branch is rejected', () => {
 
   assert.equal(result.success, false);
 });
+
+test('branch targets can share a question but cannot span two questions in one section', () => {
+  const branchQuestion = {
+    title: 'Choose a section',
+    type: QuestionType.SINGLE_CHOICE,
+    options: [
+      { label: 'First path', value: 'first', nextSectionPosition: 1 },
+      { label: 'Second path', value: 'second', nextSectionPosition: 2 },
+    ],
+  };
+  const definition = {
+    title: 'Branching questionnaire',
+    purpose: QuestionnairePurpose.STUDENT_VOICE,
+    sections: [
+      { title: 'Start', questions: [branchQuestion] },
+      { title: 'First path' },
+      { title: 'Second path' },
+    ],
+  };
+
+  assert.equal(questionnaireInputSchema.safeParse(definition).success, true);
+
+  const result = questionnaireInputSchema.safeParse({
+    ...definition,
+    sections: [
+      { title: 'Start', questions: [branchQuestion, branchQuestion] },
+      ...definition.sections.slice(1),
+    ],
+  });
+
+  assert.equal(result.success, false);
+  assert.deepEqual(result.error?.issues[0]?.path, ['sections', 0, 'questions']);
+});

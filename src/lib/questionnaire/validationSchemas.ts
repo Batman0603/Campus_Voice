@@ -32,6 +32,16 @@ const sectionSchema = z
   })
   .strict();
 
+export function hasAmbiguousBranching(section: {
+  questions: { options: { nextSectionPosition?: number | null }[] }[];
+}): boolean {
+  return (
+    section.questions.filter((question) =>
+      question.options.some((option) => option.nextSectionPosition != null),
+    ).length > 1
+  );
+}
+
 export const questionnaireInputSchema = z
   .object({
     title: z.string().trim().min(3).max(200),
@@ -44,6 +54,14 @@ export const questionnaireInputSchema = z
     const count = data.sections.length;
 
     data.sections.forEach((section, sectionIndex) => {
+      if (hasAmbiguousBranching(section)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['sections', sectionIndex, 'questions'],
+          message: 'Only one question per section may define branching',
+        });
+      }
+
       section.questions.forEach((question, questionIndex) => {
         const path = ['sections', sectionIndex, 'questions', questionIndex];
 

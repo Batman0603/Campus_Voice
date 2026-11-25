@@ -12,7 +12,10 @@ import {
   type Actor,
 } from '@/lib/questionnaire/permissions';
 
-import { type QuestionnaireInput } from '@/lib/questionnaire/validationSchemas';
+import {
+  hasAmbiguousBranching,
+  type QuestionnaireInput,
+} from '@/lib/questionnaire/validationSchemas';
 
 import { ApiError } from '@/lib/questionnaire/api';
 
@@ -187,32 +190,45 @@ export async function publishQuestionnaire(id: string, actor: Actor) {
     throw new ApiError(403, 'FORBIDDEN', 'Publishing not permitted');
   }
 
-  if (
-    current.sections.length === 0 ||
-    current.sections.some((s) => s.questions.length === 0)
-  ) {
-    throw new ApiError(
-      400,
-      'INCOMPLETE_QUESTIONNAIRE',
-      'Every published section must contain questions',
-    );
-  }
+  return prisma.$transaction(async (tx) => {
+    // Draft edits lock this same row before replacing the graph.
+    const updated = await tx.questionnaire.updateMany({
+      where: { id, status: QuestionnaireStatus.DRAFT },
+      data: {
+        status: QuestionnaireStatus.PUBLISHED,
+        publishedAt: new Date(),
+      },
+    });
 
-  const updated = await prisma.questionnaire.updateMany({
-    where: { id, status: QuestionnaireStatus.DRAFT },
-    data: {
-      status: QuestionnaireStatus.PUBLISHED,
-      publishedAt: new Date(),
-    },
-  });
+    if (updated.count !== 1) {
+      throw new ApiError(409, 'CONFLICT', 'Questionnaire was changed');
+    }
 
-  if (updated.count !== 1) {
-    throw new ApiError(409, 'CONFLICT', 'Questionnaire was changed');
-  }
+    const published = await tx.questionnaire.findUniqueOrThrow({
+      where: { id },
+      include: graphInclude,
+    });
 
-  return prisma.questionnaire.findUniqueOrThrow({
-    where: { id },
-    include: graphInclude,
+    if (
+      published.sections.length === 0 ||
+      published.sections.some((section) => section.questions.length === 0)
+    ) {
+      throw new ApiError(
+        400,
+        'INCOMPLETE_QUESTIONNAIRE',
+        'Every published section must contain questions',
+      );
+    }
+
+    if (published.sections.some(hasAmbiguousBranching)) {
+      throw new ApiError(
+        400,
+        'AMBIGUOUS_BRANCHING',
+        'Only one question per section may define branching',
+      );
+    }
+
+    return published;
   });
 }
 
