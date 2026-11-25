@@ -7,9 +7,25 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18.3
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: campusvoice
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d campusvoice"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/campusvoice
-      SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/campusvoice_shadow
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/campusvoice?schema=public
+      SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/campusvoice_shadow?schema=public
 
     steps:
       - name: Checkout repository
@@ -23,6 +39,23 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Create Prisma shadow database
+        run: |
+          PGPASSWORD=postgres psql \
+            -h localhost \
+            -U postgres \
+            -d postgres \
+            -c "CREATE DATABASE campusvoice_shadow;"
+
+      - name: Apply database migrations
+        run: npm run db:migrate:deploy
+
+      - name: Generate Next.js route types
+        run: npx next typegen
 
       - name: Check formatting
         run: npm run format:check
