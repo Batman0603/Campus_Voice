@@ -18,28 +18,30 @@ enum Role {
 }
 
 model Department {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  code      String   @unique
-  users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String          @id @default(cuid())
+  name           String          @unique
+  code           String          @unique
+  users          User[]
+  questionnaires Questionnaire[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@map("departments")
 }
 
 model User {
-  id             String      @id @default(cuid())
-  name           String
-  email          String      @unique
-  passwordHash   String
-  role           Role        @default(STUDENT)
-  departmentId   String?
-  department     Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  isActive       Boolean     @default(true)
-  sessionVersion Int         @default(0)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id                    String          @id @default(cuid())
+  name                  String
+  email                 String          @unique
+  passwordHash          String
+  role                  Role            @default(STUDENT)
+  departmentId          String?
+  department            Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdQuestionnaires Questionnaire[]
+  isActive              Boolean         @default(true)
+  sessionVersion        Int             @default(0)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
 
   @@index([role])
   @@index([departmentId])
@@ -55,4 +57,96 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+enum QuestionnairePurpose {
+  STUDENT_VOICE
+  TEACHER_REFLECTION
+  SEN
+  HOD_CHECK
+  LEADERSHIP_REPORT
+}
+
+enum QuestionnaireStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum QuestionType {
+  SHORT_TEXT
+  LONG_TEXT
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  RATING
+  YES_NO
+}
+
+model Questionnaire {
+  id          String               @id @default(cuid())
+  title       String
+  description String?
+  purpose     QuestionnairePurpose
+  status      QuestionnaireStatus  @default(DRAFT)
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+
+  sections QuestionnaireSection[]
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([createdById])
+  @@index([departmentId, status])
+  @@index([purpose, status])
+  @@map("questionnaires")
+}
+
+model QuestionnaireSection {
+  id              String        @id @default(cuid())
+  questionnaireId String
+  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  position    Int
+  questions   Question[]
+
+  @@unique([questionnaireId, position])
+  @@map("questionnaire_sections")
+}
+
+model Question {
+  id        String               @id @default(cuid())
+  sectionId String
+  section   QuestionnaireSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  title    String
+  type     QuestionType
+  required Boolean          @default(false)
+  position Int
+  options  QuestionOption[]
+
+  @@unique([sectionId, position])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  label               String
+  value               String
+  position            Int
+  nextSectionPosition Int?
+
+  @@unique([questionId, position])
+  @@unique([questionId, value])
+  @@map("question_options")
 }
